@@ -117,12 +117,12 @@ class AmbisonicPostProcessEngine:
                 'lfe': [0],
                 'vog': []
             },
-            LCR: {  # LCR
+            'LCR': {  # LCR
                 'speakers': [(-30, 0), (0, 0), (30, 0)],
                 'lfe': [],
                 'vog': []
             },
-            QUAD: {  # Quad
+            'QUAD': {  # Quad
                 'speakers': [(-45, 0), (45, 0), (-135, 0), (135, 0)],
                 'lfe': [],
                 'vog': []
