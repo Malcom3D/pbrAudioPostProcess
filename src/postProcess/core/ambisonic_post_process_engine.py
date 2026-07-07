@@ -72,7 +72,7 @@ class AmbisonicPostProcessEngine:
                 track_config = {
                     "file_path": f"{render_path}/{ambi_track}",
                     "channels": 0,
-                    "center_location": {"x": 0.0, "y": 0.0, "z": 0.0}
+                    "center_location": {"x": 0.0, "y": 0.0, "z": 0.0},
                     "boundaries": {}
                 }
 
