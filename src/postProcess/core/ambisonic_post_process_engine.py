@@ -84,10 +84,10 @@ class AmbisonicPostProcessEngine:
 
                 # Save surround track
                 track_name = ambi_track.replace('.wav','')
-                self._save_surround(decoded_audio, output_path, name, sample_rate, num_channels, num_lfe)
+                self._save_surround(decoded_audio, output_path, track_name, sample_rate, num_channels, num_lfe)
 
                 # Save a configuration file for reference
-                self._save_surround_config(output_path, name, speaker_positions, sample_rate, file_format)
+                self._save_surround_config(output_path, track_name, speaker_positions, sample_rate, file_format)
 
         elif config.system.output_format == 'STEREO':
             if config.system.stereo_hrtf:
@@ -258,7 +258,7 @@ class AmbisonicPostProcessEngine:
 
         return filtered
 
-    def _save_surround(self, decoded_audio, output_path, name, sample_rate, num_channels, num_lfe):
+    def _save_surround(self, decoded_audio, output_path, track_name, sample_rate, num_channels, num_lfe):
         """Save surround audio as multichannel WAV file."""
         config = self.entity_manager.get('config')
     
@@ -278,7 +278,7 @@ class AmbisonicPostProcessEngine:
             multichannel = multichannel / max_val * 0.95
 
         # Save as WAV
-        output_file = os.path.join(output_path, f"{name}_surround.wav")
+        output_file = os.path.join(output_path, f"{track_name}_surround.wav")
 
         # Determine subtype based on bit depth
         bit_depth = config.system.bit_depth
@@ -297,10 +297,10 @@ class AmbisonicPostProcessEngine:
 
         self.report({'INFO'}, f"Saved surround WAV: {output_file}")
 
-    def _save_surround_config(self, output_path, name, speaker_positions, sample_rate, file_format):
+    def _save_surround_config(self, output_path, track_name, speaker_positions, sample_rate, file_format):
         """Save configuration file for the surround output."""
         config = {
-            'name': name,
+            'track_name': track_name,
             'sample_rate': sample_rate,
             'file_format': file_format,
             'num_channels': len(speaker_positions),
@@ -318,7 +318,7 @@ class AmbisonicPostProcessEngine:
             config['speakers'].append(speaker)
 
         # Save configuration
-        config_file = os.path.join(output_path, f"{name}_surround_config.json")
+        config_file = os.path.join(output_path, f"{track_name}_surround_config.json")
         with open(config_file, 'w') as f:
             json.dump(config, f, indent=2)
 
