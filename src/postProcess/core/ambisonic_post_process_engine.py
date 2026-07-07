@@ -134,7 +134,7 @@ class AmbisonicPostProcessEngine:
             },
             51: {  # 5.1
                 'speakers': [(-30, 0), (30, 0), (0, 0), (-110, 0), (110, 0)],
-                'lfe': [0]  # LFE at center
+                'lfe': [0],  # LFE at center
                 'vog': []
             },
             61: {  # 6.1
