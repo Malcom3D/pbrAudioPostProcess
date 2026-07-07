@@ -17,6 +17,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import os
+import json
 import numpy as np
 import soundfile as sf
 from typing import Dict, List, Optional, Any
