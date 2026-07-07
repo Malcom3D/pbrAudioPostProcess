@@ -67,7 +67,7 @@ class AmbisonicPostProcessEngine:
             # Find all ambisonic tracks
             render_path = config.system.render_path
             ambi_tracks = os.listdir(render_path)
-            ambi_tracks = [x for x in items if x.endswith('.wav')]
+            ambi_tracks = [x for x in ambi_tracks if x.endswith('.wav')]
             for ambi_track in ambi_tracks:
                 track_config = {
                     "file_path": f"{render_path}/{ambi_track}",
