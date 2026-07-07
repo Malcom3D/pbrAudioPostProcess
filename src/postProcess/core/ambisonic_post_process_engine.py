@@ -298,7 +298,7 @@ class AmbisonicPostProcessEngine:
 
         sf.write(output_file, multichannel, sample_rate, subtype=subtype)
 
-        self.report({'INFO'}, f"Saved surround WAV: {output_file}")
+        print(f"Saved surround WAV: {output_file}")
 
     def _save_surround_config(self, output_path, track_name, speaker_positions, sample_rate, file_format):
         """Save configuration file for the surround output."""
@@ -325,4 +325,4 @@ class AmbisonicPostProcessEngine:
         with open(config_file, 'w') as f:
             json.dump(config, f, indent=2)
 
-        self.report({'INFO'}, f"Saved surround config: {config_file}")
+        print(f"Saved surround config: {config_file}")
