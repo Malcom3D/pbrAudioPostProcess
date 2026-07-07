@@ -27,13 +27,15 @@ decimals = 18
 np.set_printoptions(precision=decimals, floatmode='fixed', threshold=np.inf)
 
 from .core.post_process_engine import PostProcessEngine
+from .core.ambisonic_post_process_engine import AmbisonicPostProcessEngine
 from .lib.synth_post_process import SynthPostProcess
 from .lib.audio_forces_denoiser import AudioForcesDenoiser
 from .lib.ambisonic_decoder import AmbisonicDecoder
 
 __all__ = [
-     'AmbisonicDecoder',
      'PostProcessEngine',
+     'AmbisonicPostProcessEngine',
+     'AmbisonicDecoder',
      'SynthPostProcess',
      'AudioForcesDenoiser'
 ]
