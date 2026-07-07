@@ -71,8 +71,9 @@ class AmbisonicPostProcessEngine:
             for ambi_track in ambi_tracks:
                 track_config = {
                     "file_path": f"{render_path}/{ambi_track}",
-                    "channels": num_speakers,
+                    "channels": 0,
                     "center_location": {"x": 0.0, "y": 0.0, "z": 0.0}
+                    "boundaries": {}
                 }
 
                 # Create decoder with the environment config
