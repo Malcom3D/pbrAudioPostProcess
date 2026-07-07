@@ -59,14 +59,9 @@ class AmbisonicPostProcessEngine:
             file_format = config.system.file_format
 
             # Generate standard speaker arrangement based on channel count
-            speaker_positions = self._get_speaker_positions(surround_format)
+            speaker_positions, num_channels, num_lfe, num_vog = self._get_speaker_positions(surround_format)
 
             # Compute channels number
-            num_channels, num_lfe, num_vog = (0 for _ in range(3))
-            num_channels = len(surround_format['speakers'])
-            num_lfe = len(surround_format['lfe'])
-            if config.system.enable_vog:
-                num_vog = len(surround_format['vog'])
             num_speakers = num_channels + num_lfe + num_vog
 
             # Find all ambisonic tracks
@@ -189,6 +184,13 @@ class AmbisonicPostProcessEngine:
         # Find the selected standard configuration
         standard = standard_configs[surround_format]
 
+        # Compute channels number 
+        num_channels, num_lfe, num_vog = (0 for _ in range(3))
+        num_channels = len(standard['speakers']) 
+        num_lfe = len(standard['lfe'])
+        if config.system.enable_vog:
+            num_vog = len(standard['vog'])
+
         # Build speaker positions list
         positions = []
    
@@ -211,7 +213,7 @@ class AmbisonicPostProcessEngine:
                 elevation = 90
                 is_lfe = False
                 positions.append((azimuth, elevation, is_lfe))
-        return positions
+        return positions, num_channels, num_lfe, num_vog
 
     def _decode_surround(self, decoder, speaker_positions):
         """
