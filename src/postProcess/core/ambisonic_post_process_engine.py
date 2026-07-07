@@ -55,7 +55,7 @@ class AmbisonicPostProcessEngine:
         if config.system.output_format == 'SURROUND':
             # Get surround configuration
             bit_depth = config.system.bit_depth
-            sample_rate = config.system.sample_rate
+            sample_rate = int(config.system.sample_rate)
             surround_format = config.system.surround_format
             file_format = config.system.file_format
 
@@ -282,15 +282,16 @@ class AmbisonicPostProcessEngine:
         output_file = os.path.join(output_path, f"{track_name}_surround.wav")
 
         # Determine subtype based on bit depth
-        bit_depth = config.system.bit_depth
-        if bit_depth == '16BIT':
+        if bit_depth == '16':
             subtype = 'PCM_16'
-        elif bit_depth == '24BIT':
+        elif bit_depth == '24':
             subtype = 'PCM_24'
-        elif bit_depth == '32BIT':
+        elif bit_depth == '32':
             subtype = 'PCM_32'
         elif bit_depth == 'FLOAT':
             subtype = 'FLOAT'
+        elif bit_depth == 'DOUBLE':
+            subtype = 'DOUBLE'
         else:
             subtype = 'FLOAT'
 
