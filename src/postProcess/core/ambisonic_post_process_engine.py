@@ -187,10 +187,10 @@ class AmbisonicPostProcessEngine:
 
         # Compute channels number 
         num_channels, num_lfe, num_vog = (0 for _ in range(3))
-        num_channels = len(standard['speakers']) 
         num_lfe = len(standard['lfe'])
         if config.system.enable_vog:
             num_vog = len(standard['vog'])
+        num_channels = len(standard['speakers']) + num_lfe + num_vog
 
         # Build speaker positions list
         positions = []
