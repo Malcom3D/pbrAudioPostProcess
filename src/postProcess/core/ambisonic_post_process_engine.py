@@ -309,7 +309,7 @@ class AmbisonicPostProcessEngine:
 
         # Save configuration
         config_file = os.path.join(output_path, f"{name}_surround_config.json")
-        with open open(config_file, 'w') as f:
+        with open(config_file, 'w') as f:
             json.dump(config, f, indent=2)
 
         self.report({'INFO'}, f"Saved surround config: {config_file}")
