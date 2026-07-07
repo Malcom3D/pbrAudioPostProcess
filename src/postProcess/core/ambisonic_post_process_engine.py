@@ -63,10 +63,10 @@ class AmbisonicPostProcessEngine:
 
             # Compute channels number
             num_channels, num_lfe, num_vog = (0 for _ in range(3))
-            num_channels = len(speaker_positions['speakers'])
-            num_lfe = len(speaker_positions['lfe'])
+            num_channels = len(surround_format['speakers'])
+            num_lfe = len(surround_format['lfe'])
             if config.system.enable_vog:
-                num_vog = len(speaker_positions['vog'])
+                num_vog = len(surround_format['vog'])
             num_speakers = num_channels + num_lfe + num_vog
 
             # Find all ambisonic tracks
@@ -153,6 +153,12 @@ class AmbisonicPostProcessEngine:
                 'lfe': [0],
                 'vog': [0]
             },
+            '101': {  # 10.1
+                'speakers': [(-30, 0), (30, 0), (0, 0), (-110, 0), (110, 0),
+                            (-30, 0), (30, 0), (0, 45), (-110, 45), (110, 45)],
+                'lfe': [0],
+                'vog': [0]
+            },
             '111': {  # 11.1
                 'speakers': [(-30, 0), (30, 0), (0, 0), (-110, 0), (110, 0),
                             (-135, 0), (135, 0), (-45, 45), (45, 45), (-90, 45), (90, 45)],
@@ -203,7 +209,8 @@ class AmbisonicPostProcessEngine:
             for i in range(len(standard['vog'])):
                 azimuth = 0  # VOG typically at center above listeners
                 elevation = 90
-                positions.append((azimuth, elevation))
+                is_lfe = False
+                positions.append((azimuth, elevation, is_lfe))
         return positions
 
     def _decode_surround(self, decoder, speaker_positions):
