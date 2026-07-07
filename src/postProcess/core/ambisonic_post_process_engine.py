@@ -282,6 +282,7 @@ class AmbisonicPostProcessEngine:
         output_file = os.path.join(output_path, f"{track_name}_surround.wav")
 
         # Determine subtype based on bit depth
+        bit_depth = config.system.bit_depth
         if bit_depth == '16':
             subtype = 'PCM_16'
         elif bit_depth == '24':
