@@ -30,10 +30,7 @@ class AmbisonicToStereoHRTF:
     Supports first-order ambisonics (FOA) up to higher orders.
     """
     
-    def __init__(self, 
-                 hrtf_path: Optional[str] = None,
-                 sample_rate: int = 44100,
-                 ambisonic_order: int = 1):
+    def __init__(self, hrtf_path: Optional[str] = None, sample_rate: int = 44100, ambisonic_order: int = 1):
         """
         Initialize the decoder.
         
@@ -199,10 +196,7 @@ class AmbisonicToStereoHRTF:
         
         return left_channel, right_channel
     
-    def decode(self, 
-               ambisonic_audio: np.ndarray,
-               virtual_speakers: Optional[list] = None,
-               output_type: str = 'binaural') -> np.ndarray:
+    def decode(self, ambisonic_audio: np.ndarray, virtual_speakers: Optional[list] = None, output_type: str = 'binaural') -> np.ndarray:
         """
         Decode ambisonic audio to stereo.
         
@@ -225,10 +219,7 @@ class AmbisonicToStereoHRTF:
         # Default virtual speaker layout (8 speakers for FOA)
         if virtual_speakers is None:
             if self.ambisonic_order == 1:
-                virtual_speakers = [
-                    (0, 0), (45, 0), (90, 0), (135, 0),
-                    (180, 0), (225, 0), (270, 0), (315, 0)
-                ]
+                virtual_speakers = [(0, 0), (45, 0), (90, 0), (135, 0), (180, 0), (225, 0), (270, 0), (315, 0)]
             else:
                 # For higher orders, add more elevation angles
                 virtual_speakers = []
@@ -282,71 +273,4 @@ class AmbisonicToStereoHRTF:
             if max_val > 0:
                 stereo_output *= 0.9 / max_val
         
-        return stereo_output
-    
-    def decode_file(self, 
-                    input_file: str, 
-                    output_file: str,
-                    **kwargs) -> None:
-        """
-        Decode ambisonic audio file to stereo.
-        
-        Args:
-            input_file: Path to input WAV file
-            output_file: Path to output WAV file
-            **kwargs: Additional arguments for decode() method
-        """
-        # Read input file
-        sample_rate, audio_data = wavfile.read(input_file)
-        
-        # Convert to float if needed
-        if audio_data.dtype == np.int16:
-            audio_data_data = audio_data.astype(np.float32) / 32768.0
-        elif audio_data.dtype == np.int32:
-            audio_data = audio_data.astype(np.float32) / 2147483648.0
-        
-        # If sample rate doesn't match, resample
-        if sample_rate != self.sample_rate:
-            # Resample each channel
-            new_length = int(len(audio_data) * self.sample_rate / sample_rate)
-            resampled = np.zeros((new_length, audio_data.shape[1]))
-            for ch in range(audio_data.shape[1]):
-                resampled[:, ch] = signal.resample(audio_data[:, ch], new_length)
-            audio_data = resampled
-        
-        # Decode
-        stereo_audio = self.decode(audio_data, **kwargs)
-        
-        # Convert back to int16 for saving
-        stereo_audio_int = (stereo_audio * 32767).astype(np.int16)
-        
-        # Save output
-        wavfile.write(output_file, self.sample_rate, stereo_audio_int)
-    
-    def process_stream(self, 
-                       audio_stream: np.ndarray,
-                       block_size: int = 1024,
-                       **kwargs) -> np.ndarray:
-        """
-        Process streaming audio in blocks.
-        
-        Args:
-            audio_stream: Input audio stream [samples, channels]
-            block_size: Processing block size
-            **kwargs: Additional arguments for decode()
-            
-        Returns:
-            Processed stereo stream [samples, 2]
-        """
-        num_samples = len(audio_stream)
-        output = np.zeros((num_samples, 2))
-        
-        # Process in blocks
-        for start in range(0, num_samples, block_size):
-            end = min(start + block_size, num_samples)
-            block = audio_stream[start:end]
-            
-            # Process block
-            output[start:end] = self.decode(block, **kwargs)
-        
-        return output
+        return stereo_output, virtual_speakers

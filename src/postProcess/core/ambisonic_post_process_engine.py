@@ -144,14 +144,13 @@ class AmbisonicPostProcessEngine:
                     decoder = AmbisonicToStereoHRTF(hrtf_path=config.system.hrtf_file, sample_rate=sample_rate, ambisonic_order=ambi_order)
 
                     # Decode to stereo
-                    decoded_audio = decoder.decode(ambi_data)
+                    decoded_audio, speaker_positions = decoder.decode(ambi_data)
 
                     # Save track as stereo
                     track_name = ambi_track.replace('.wav','_HRTF')
                     self._save_stereo(decoded_audio, output_path, track_name, sample_rate, file_format)
 
                     # Save a configuration file for reference
-                    speaker_positions = [(0, 0), (45, 0), (90, 0), (135, 0), (180, 0), (225, 0), (270, 0), (315, 0)]
                     self._save_surround_config(output_path, track_name, speaker_positions, sample_rate, file_format)
 
             else:
