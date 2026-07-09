@@ -16,10 +16,13 @@
 # along with pbrAudio.  If not, see <https://www.gnu.org/licenses/>.
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+
 import os
 import json
+import warnings
 import numpy as np
 import soundfile as sf
+from scipy import signal
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from dask import delayed, compute
@@ -27,6 +30,7 @@ from dask import delayed, compute
 from physicsSolver import EntityManager
 from physicsSolver.lib.functions import _update_status
 from ..lib.ambisonic_decoder import AmbisonicDecoder
+from ..lib.ambisonic_to_stereo_hrtf import AmbisonicToStereoHRTF
 
 @dataclass
 class AmbisonicPostProcessEngine:
@@ -52,13 +56,14 @@ class AmbisonicPostProcessEngine:
         config = self.entity_manager.get('config')
         render_path = config.system.output_path
         output_path = config.system.output_path
+        bit_depth = config.system.bit_depth
+        sample_rate = int(config.system.sample_rate)
+        file_format = config.system.file_format
+        render_path = config.system.render_path
 
         if config.system.output_format == 'SURROUND':
             # Get surround configuration
-            bit_depth = config.system.bit_depth
-            sample_rate = int(config.system.sample_rate)
             surround_format = config.system.surround_format
-            file_format = config.system.file_format
 
             # Generate standard speaker arrangement based on channel count
             speaker_positions, num_channels, num_lfe, num_vog = self._get_speaker_positions(surround_format)
@@ -67,7 +72,6 @@ class AmbisonicPostProcessEngine:
             num_speakers = num_channels + num_lfe + num_vog
 
             # Find all ambisonic tracks
-            render_path = config.system.render_path
             ambi_tracks = os.listdir(render_path)
             ambi_tracks = [x for x in ambi_tracks if x.endswith('.wav')]
             for ambi_track in ambi_tracks:
@@ -78,7 +82,7 @@ class AmbisonicPostProcessEngine:
                     "boundaries": {}
                 }
 
-                # Create decoder with the environment config
+                # Create decoder with the track config
                 decoder = AmbisonicDecoder(config_data=track_config)
 
                 # Decode for all speaker positions
@@ -92,13 +96,207 @@ class AmbisonicPostProcessEngine:
                 self._save_surround_config(output_path, track_name, speaker_positions, sample_rate, file_format)
 
         elif config.system.output_format == 'STEREO':
-            if config.system.stereo_hrtf:
-                # ToDo: Implement HRTF decoding
-                print("HRTF decoding not yet implemented")
+            if config.system.stereo_format == 'ProLogicII':
+                # Set surround configuration to 5.1
+                surround_format = "51"
+
+                # Generate standard speaker arrangement based on channel count
+                speaker_positions, num_channels, num_lfe, num_vog = self._get_speaker_positions(surround_format)
+
+                # Compute channels number
+                num_speakers = num_channels + num_lfe + num_vog
+
+                # Find all ambisonic tracks
+                ambi_tracks = os.listdir(render_path)
+                ambi_tracks = [x for x in ambi_tracks if x.endswith('.wav')]
+                for ambi_track in ambi_tracks:
+                    track_config = {
+                        "file_path": f"{render_path}/{ambi_track}",
+                        "channels": 0,
+                        "center_location": {"x": 0.0, "y": 0.0, "z": 0.0},
+                        "boundaries": {}
+                    } 
+
+                    # Create decoder with the track config
+                    decoder = AmbisonicDecoder(config_data=track_config)
+
+                    # Decode for all speaker positions
+                    decoded_audio = self._decode_surround(decoder, speaker_positions)
+
+                    # Save surround track as stereo ProLogic II
+                    track_name = ambi_track.replace('.wav','')
+                    self._pro_logic_ii_downmix(decoded_audio, output_path, track_name, sample_rate, file_format)
+
+                    # Save a configuration file for reference
+                    self._save_surround_config(output_path, track_name, speaker_positions, sample_rate, file_format)
+
+            elif config.system.stereo_format == 'HRTF':
+                # Ambisonic to stereo using HRTF binaural render
+                # Find all ambisonic tracks
+                ambi_tracks = os.listdir(render_path)
+                ambi_tracks = [x for x in ambi_tracks if x.endswith('.wav')]
+                for ambi_track in ambi_tracks:
+                    ambi_data, sr = sf.read(ambi_track)
+                    ambi_channels = ambi_data.shape[1]
+                    ambi_order = int(np.sqrt(ambi_channels) - 1)
+
+                    # Create decoder
+                    decoder = AmbisonicToStereoHRTF(hrtf_path=config.system.hrtf_file, sample_rate=sample_rate, ambisonic_order=ambi_order)
+
+                    # Decode to stereo
+                    decoded_audio = decoder.decode(ambi_data)
+
+                    # Save track as stereo
+                    track_name = ambi_track.replace('.wav','_HRTF')
+                    self._save_stereo(decoded_audio, output_path, track_name, sample_rate, file_format)
+
+                    # Save a configuration file for reference
+                    speaker_positions = [(0, 0), (45, 0), (90, 0), (135, 0), (180, 0), (225, 0), (270, 0), (315, 0)]
+                    self._save_surround_config(output_path, track_name, speaker_positions, sample_rate, file_format)
+
             else:
-                # Standard stereo decoding
-                print("Stereo decoding not yet implemented")
-                #self._decode_stereo(render_path)
+                # Get stereo configuration
+                stereo_format = config.system.stereo_format
+
+                # Generate standard speaker arrangement
+                speaker_positions, num_speakers, _, _ = self._get_speaker_positions(stereo_format)
+
+                # Find all ambisonic tracks
+                ambi_tracks = os.listdir(render_path)
+                ambi_tracks = [x for x in ambi_tracks if x.endswith('.wav')]
+                for ambi_track in ambi_tracks:
+                    track_config = {
+                        "file_path": f"{render_path}/{ambi_track}",
+                        "channels": 0,
+                        "center_location": {"x": 0.0, "y": 0.0, "z": 0.0},
+                        "boundaries": {}
+                    }
+
+                    # Create decoder with the track config
+                    decoder = AmbisonicDecoder(config_data=track_config)
+
+                    # Decode for all speaker positions
+                    decoded_audio = self._decode_surround(decoder, speaker_positions)
+
+                    # Save surround track as stereo ProLogic II
+                    track_name = ambi_track.replace('.wav','')
+                    self._save_stereo(decoded_audio, output_path, track_name, sample_rate, file_format)
+
+                    # Save a configuration file for reference
+                    self._save_surround_config(output_path, track_name, speaker_positions, sample_rate, file_format)
+
+    def _save_stereo(self, decoded_audio, output_path, track_name, sample_rate, file_format, normalize=True):
+        """
+        Save stereo track
+        """
+        if decoded_audio.ndim != 2 or decoded_audio.shape[1] != 2:
+            raise ValueError("Input must be a 2-channel audio file")
+
+        if normalize:
+            max_val = np.max(np.abs(stereo))
+            if max_val > 0:
+                stereo = stereo / max_val
+
+        # Save as WAV
+        output_file = os.path.join(output_path, f"{track_name}_stereo.wav")
+
+        # Determine subtype based on bit depth
+        bit_depth = config.system.bit_depth
+        if bit_depth == '16':
+            subtype = 'PCM_16'
+        elif bit_depth == '24':
+            subtype = 'PCM_24'
+        elif bit_depth == '32':
+            subtype = 'PCM_32'
+        elif bit_depth == 'FLOAT':
+            subtype = 'FLOAT'
+        elif bit_depth == 'DOUBLE':
+            subtype = 'DOUBLE'
+        else:
+            subtype = 'FLOAT'
+
+        sf.write(output_file, stereo, sample_rate, subtype=subtype)
+
+        print(f"Saved stereo WAV: {output_file}")
+
+    def _pro_logic_ii_downmix(self, decoded_audio, output_path, track_name, sample_rate, file_format, center_gain=0.707, surround_gain=0.707, lfe_to_lr=True, normalize=True):
+        """
+        Convert 5.1 surround to stereo with Pro Logic-like encoding
+
+        Pro Logic IIx matrix (more common):
+        Lt = L + 0.707*C + 0.707*Ls + 0.707*Rs (90° phase shift)
+        Rt = R + 0.707*C - 0.707*Ls - 0.707*Rs (90° phase shift)
+        """
+
+        if decoded_audio.ndim != 2 or decoded_audio.shape[1] != 6:
+            raise ValueError("Input must be a 6-channel (5.1) audio file")
+
+        FL = decoded_audio[:, 0]
+        FR = decoded_audio[:, 1]
+        FC = decoded_audio[:, 2]
+        LFE = decoded_audio[:, 3]
+        SL = decoded_audio[:, 4]
+        SR = decoded_audio[:, 5]
+
+        # Handle LFE
+        if lfe_to_lr:
+            FL += LFE * 0.5
+            FR += LFE * 0.5
+
+        # Apply 90° phase shift to surround channels for better stereo imaging
+        # This is a simplified Hilbert transform approach
+        phase_shift = np.exp(-1j * np.pi/2)  # -90 degrees
+
+        # Apply phase shift using FFT
+        n = len(SL)
+        SL_fft = np.fft.fft(SL)
+        SR_fft = np.fft.fft(SR)
+
+        # Create frequency vector
+        freqs = np.fft.fftfreq(n, 1/sample_rate)
+
+        # Apply phase shift only to positive frequencies
+        mask = freqs > 0
+        SL_fft[mask] *= phase_shift
+        SR_fft[mask] *= phase_shift
+
+        # Inverse FFT
+        SL_shifted = np.real(np.fft.ifft(SL_fft))
+        SR_shifted = np.real(np.fft.ifft(SR_fft))
+
+        # Pro Logic IIx matrix
+        Lt = FL + (center_gain * FC) + (surround_gain * SL_shifted) + (surround_gain * SR_shifted)
+        Rt = FR + (center_gain * FC) - (surround_gain * SL_shifted) - (surround_gain * SR_shifted)
+
+        stereo = np.column_stack((Lt, Rt))
+
+        # Normalize
+        if normalize:
+            max_val = np.max(np.abs(stereo))
+            if max_val > 0:
+                stereo = stereo / max_val
+
+        # Save as WAV
+        output_file = os.path.join(output_path, f"{track_name}_ProLogicII.wav")
+
+        # Determine subtype based on bit depth
+        bit_depth = config.system.bit_depth
+        if bit_depth == '16':
+            subtype = 'PCM_16'
+        elif bit_depth == '24':
+            subtype = 'PCM_24'
+        elif bit_depth == '32':
+            subtype = 'PCM_32'
+        elif bit_depth == 'FLOAT':
+            subtype = 'FLOAT'
+        elif bit_depth == 'DOUBLE':
+            subtype = 'DOUBLE'
+        else:
+            subtype = 'FLOAT'
+
+        sf.write(output_file, stereo, sample_rate, subtype=subtype)
+
+        print(f"Saved ProLogic II WAV: {output_file}")
 
     def _get_speaker_positions(self, surround_format):
         """
@@ -110,6 +308,21 @@ class AmbisonicPostProcessEngine:
         config = self.entity_manager.get('config')
         # Standard speaker configurations (azimuth, elevation)
         standard_configs = {
+            '90': {
+                'speakers': [(-45, 0), (45, 0)],
+                'lfe': [],
+                'vog': []
+            },  
+            '120': {
+                'speakers': [(-60, 0), (60, 0)],
+                'lfe': [],
+                'vog': []
+            },  
+            '180': {
+                'speakers': [(-90, 0), (90, 0)],
+                'lfe': [],
+                'vog': []
+            },
             '21': {  # Stereo w/LFE
                 'speakers': [(-30, 0), (30, 0)],
                 'lfe': [0],
