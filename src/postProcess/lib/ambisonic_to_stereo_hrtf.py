@@ -233,7 +233,7 @@ class AmbisonicToStereoHRTF:
                 # For higher orders, add more elevation angles
                 virtual_speakers = []
                 for el in [-30, 0, 30]:
-                    for for az in range(0, 360, 45):
+                    for az in range(0, 360, 45):
                         virtual_speakers.append((az, el))
         
         # Initialize output
