@@ -18,7 +18,7 @@
 
 __version__ = "0.0.3"
 __author__ = "Malcom3D"
-__description__ = "Sound PostProcessing Engine and Library for pbrAudioShaders and pbrAudioRender"
+__description__ = "PostProcessing Engine and Library for pbrAudioShaders and pbrAudioRender"
 
 import os, sys
 import numpy as np

@@ -1,7 +1,7 @@
 pbrAudioPostProcess
 ====================
 
-Sound PostProcessing Engine and Library for the Physically based audio rendering suite pbrAudio.
+PostProcessing Engine and Library for the physically based rendered Audio suite pbrAudio.
 
 ## License
 
