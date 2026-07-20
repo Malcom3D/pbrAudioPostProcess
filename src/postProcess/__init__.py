@@ -35,6 +35,7 @@ from .lib.ambisonic_decoder import AmbisonicDecoder
 __all__ = [
      'PostProcessEngine',
      'AmbisonicPostProcessEngine',
+     'TrajectoryPostProcessEngine',
      'AmbisonicDecoder',
      'SynthPostProcess',
      'AudioForcesDenoiser'

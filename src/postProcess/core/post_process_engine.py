@@ -43,11 +43,12 @@ class PostProcessEngine:
     
     def __post_init__(self):
         config = self.entity_manager.get('config')
-        system_config = config.system
-        self.status_dir = f"{system_config.cache_path}/status/PostProcessEngine"
+        self.status_dir = f"{config.system.cache_path}/status/PostProcessEngine"
         os.makedirs(self.status_dir, exist_ok=True)
-        
+
+        # init post processor
         self.synth_post_processor = SynthPostProcess(entity_manager=self.entity_manager)
+        self.trajectory_post_processor = TrajectoryPostProcessor(entity_manager=self.entity_manager)
     
     def process(self) -> Dict[str, Dict[str, np.ndarray]]:
         """
@@ -103,4 +104,57 @@ class PostProcessEngine:
         
         _update_status(f"{self.status_dir}/post_bake", 100)
         
+        return results
+
+    def _process_trajectory(self, obj_idx: int) -> TrajectoryData:
+        """
+        Convenience function to post-process a single object's trajectory.
+    
+        Args:
+            obj_idx: Object index to process
+        
+        Returns:
+            Corrected TrajectoryData
+        """
+        # Get trajectory
+        trajectories = self.entity_manager.get('trajectories')
+        trajectory = None
+    
+        for traj in trajectories.values():
+            if hasattr(traj, 'obj_idx') and traj.obj_idx == obj_idx:
+                trajectory = traj
+                break
+    
+        if trajectory is None:
+            raise ValueError(f"No trajectory found for object {obj_idx}")
+    
+        # Apply post-processing
+        corrected = self.trajectory_post_processor.process(trajectory)
+    
+        # Update entity manager
+        for key, traj in trajectories.items():
+            if hasattr(traj, 'obj_idx') and traj.obj_idx == obj_idx:
+                self.entity_manager._trajectories[key] = corrected
+                break
+    
+        return corrected
+
+    def batch_post_process_trajectories(self) -> Dict[int, TrajectoryData]:
+        """
+        Post-process all dynamic object trajectories.
+    
+        Returns:
+            Dictionary mapping object indices to corrected trajectories
+        """
+        config = self.entity_manager.get('config')
+        results = {}
+        for obj in config.objects:
+            if not obj.static:
+                try:
+                    corrected = _process_trajectory(obj.idx)
+                    results[obj.idx] = corrected
+                    print(f"Post-processed trajectory for object {obj.name} (idx={obj.idx})")
+                except Exception as e:
+                    print(f"Warning: Could not post-process object {obj.name}: {e}")
+    
         return results
