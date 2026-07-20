@@ -25,7 +25,6 @@ from dataclasses import dataclass, field
 from dask import delayed, compute
 
 from physicsSolver import EntityManager
-from physicsSolver.lib.trajectory_data import TrajectoryData
 from physicsSolver.lib.functions import _update_status
 from ..lib.trajectory_post_process import TrajectoryPostProcess
 
@@ -40,6 +39,8 @@ class TrajectoryPostProcessEngine:
     entity_manager: EntityManager
     
     def __post_init__(self):
+        from physicsSolver.lib.trajectory_data import TrajectoryData
+
         config = self.entity_manager.get('config')
         self.status_dir = f"{config.system.cache_path}/status/TrajectoryPostProcessEngine"
         os.makedirs(self.status_dir, exist_ok=True)
