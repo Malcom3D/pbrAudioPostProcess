@@ -23,6 +23,7 @@ from scipy import signal
 from scipy.ndimage import gaussian_filter1d
 from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass, field
+from scipy.ndimage import gaussian_filter1d
 
 from physicsSolver import EntityManager
 from physicsSolver.lib.trajectory_data import TrajectoryData
@@ -441,35 +442,30 @@ class TrajectoryPostProcess:
         
         return blended
     
-    def _weighted_smoothing(self, data: np.ndarray, weights: np.ndarray,
-                             sigma: float) -> np.ndarray:
+    def _weighted_smoothing(self, data: np.ndarray, weights: np.ndarray, sigma: float) -> np.ndarray:
         """
-        Apply weighted Gaussian smoothing.
-        
+        Apply weighted Gaussian smoothing using scipy's gaussian_filter1d.
+        Use scipy's gaussian_filter1d which handles boundary conditions better and maintains the same shape
+    
         Args:
             data: Input data
             weights: Weight for each sample (0-1)
             sigma: Gaussian sigma
-            
+        
         Returns:
-            Smoothed data
+            Smoothed data with same shape as input
         """
-        # Create kernel
-        kernel_size = int(sigma * 5) | 1  # Ensure odd
-        kernel = np.exp(-0.5 * (np.arange(kernel_size) - kernel_size//2)**2 / sigma**2)
-        kernel = kernel / kernel.sum()
-        
-        # Apply weighted convolution
+        # Apply weighted smoothing
         weighted_data = data * weights
-        smoothed = np.convolve(weighted_data, kernel, mode='same')
-        
+        smoothed = gaussian_filter1d(weighted_data, sigma=sigma, mode='reflect')
+    
         # Normalize by weight convolution
-        weight_sum = np.convolve(weights, kernel, mode='same')
+        weight_sum = gaussian_filter1d(weights, sigma=sigma, mode='reflect')
         weight_sum[weight_sum < 1e-10] = 1.0
         smoothed = smoothed / weight_sum
-        
-        return smoothed
     
+        return smoothed
+
     def _apply_rigid_body_constraints(self, positions: np.ndarray,
                                        frame_times: np.ndarray) -> np.ndarray:
         """
