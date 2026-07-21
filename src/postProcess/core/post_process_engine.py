@@ -28,6 +28,7 @@ from dask import delayed, compute
 
 from physicsSolver import EntityManager
 from physicsSolver.lib.functions import _update_status
+from physicsSolver.lib.trajectory_data import TrajectoryData
 from ..lib.synth_post_process import SynthPostProcess
 
 
