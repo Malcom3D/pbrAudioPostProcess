@@ -26,6 +26,7 @@ from dask import delayed, compute
 
 from physicsSolver import EntityManager
 from physicsSolver.lib.functions import _update_status
+from physicsSolver.lib.trajectory_data import TrajectoryData
 from ..lib.trajectory_post_process import TrajectoryPostProcess
 
 
@@ -39,7 +40,6 @@ class TrajectoryPostProcessEngine:
     entity_manager: EntityManager
     
     def __post_init__(self):
-        from physicsSolver.lib.trajectory_data import TrajectoryData
 
         config = self.entity_manager.get('config')
         self.status_dir = f"{config.system.cache_path}/status/TrajectoryPostProcessEngine"
@@ -115,7 +115,7 @@ class TrajectoryPostProcessEngine:
         
         for obj_idx, trajectory in results.items():
             filename = f"{output_dir}/obj_{obj_idx:05d}.pkl"
-            trajectory.save(filename(filename)
+            trajectory.save(filename)
         
         _update_status(f"{self.status_dir}/pre_distance", 100)
 

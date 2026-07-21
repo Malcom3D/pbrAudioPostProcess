@@ -27,6 +27,7 @@ decimals = 18
 np.set_printoptions(precision=decimals, floatmode='fixed', threshold=np.inf)
 
 from .core.post_process_engine import PostProcessEngine
+from .core.trajectory_post_process_engine import TrajectoryPostProcessEngine
 from .core.ambisonic_post_process_engine import AmbisonicPostProcessEngine
 from .lib.synth_post_process import SynthPostProcess
 from .lib.audio_forces_denoiser import AudioForcesDenoiser

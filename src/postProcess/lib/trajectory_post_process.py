@@ -43,6 +43,7 @@ class TrajectoryPostProcess:
 
     def __post_init__(self):
         # Detection parameters
+        config = self.entity_manager.get('config')
         self.bounce_threshold = config.trajectory_postprocess.bounce_threshold
 #        self.bounce_frequency_range = config.trajectory_postprocess.bounce_frequency_range
 #        self.penetration_margin = config.trajectory_postprocess.penetration_margin
@@ -427,7 +428,7 @@ class TrajectoryPostProcess:
         if np.any(bounce_mask):
             # Create weights: lower weight for bounce frames
             weights = np.ones_like(data)
-            weights[bounce_mask]] = 0.1
+            weights[bounce_mask] = 0.1
             
             # Apply weighted smoothing
             smoothed = self._weighted_smoothing(data, weights, sigma=self.smoothing_sigma)
@@ -463,7 +464,7 @@ class TrajectoryPostProcess:
         smoothed = np.convolve(weighted_data, kernel, mode='same')
         
         # Normalize by weight convolution
-        weight_sum = np.convolveve(weights, kernel, mode='same')
+        weight_sum = np.convolve(weights, kernel, mode='same')
         weight_sum[weight_sum < 1e-10] = 1.0
         smoothed = smoothed / weight_sum
         
