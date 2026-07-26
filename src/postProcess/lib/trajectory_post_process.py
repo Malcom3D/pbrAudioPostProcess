@@ -16,8 +16,6 @@
 # along with pbrAudio.  If not, see <https://www.gnu.org/licenses/>.
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# pbrAudioPostProcess/src/postProcess/lib/trajectory_post_process.py
-
 import numpy as np
 from scipy import signal
 from scipy.ndimage import gaussian_filter1d

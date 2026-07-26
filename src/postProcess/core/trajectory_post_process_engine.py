@@ -16,8 +16,6 @@
 # along with pbrAudio.  If not, see <https://www.gnu.org/licenses/>.
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# pbrAudioPostProcess/src/postProcess/core/trajectory_post_process_engine.py
-
 import os
 import numpy as np
 from typing import Dict, List, Optional, Any
@@ -45,9 +43,7 @@ class TrajectoryPostProcessEngine:
         self.status_dir = f"{config.system.cache_path}/status/TrajectoryPostProcessEngine"
         os.makedirs(self.status_dir, exist_ok=True)
         
-        self.trajectory_post_processor = TrajectoryPostProcess(
-            entity_manager=self.entity_manager
-        )
+        self.trajectory_post_processor = TrajectoryPostProcess(entity_manager=self.entity_manager)
     
     def process(self) -> Dict[int, TrajectoryData]:
         """
@@ -110,12 +106,14 @@ class TrajectoryPostProcessEngine:
         
         # Save corrected trajectories
         config = self.entity_manager.get('config')
-        output_dir = f"{config.system.cache_path}/trajectories_corrected"
+        output_dir = f"{config.system.cache_path}/trajectories/corrected"
         os.makedirs(output_dir, exist_ok=True)
         
         for obj_idx, trajectory in results.items():
-            filename = f"{output_dir}/obj_{obj_idx:05d}.pkl"
-            trajectory.save(filename)
+            for config_obj in config.objects:
+                if config_obj.idx == obj_idx:
+                    filename = f"{output_dir}/{config_obj.name}.pkl"
+                    trajectory.save(filename)
         
         _update_status(f"{self.status_dir}/pre_distance", 100)
 
