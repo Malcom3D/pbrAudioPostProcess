@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 from dask import delayed, compute
 
 from pbrAudioCommon import EntityManager
-from physicsSolver.lib.functions import _update_status
+from pbrAudioCommon import _update_status
 from physicsSolver.lib.trajectory_data import TrajectoryData
 from ..lib.trajectory_post_process import TrajectoryPostProcess
 

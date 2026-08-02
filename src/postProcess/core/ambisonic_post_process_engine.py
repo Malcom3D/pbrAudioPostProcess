@@ -28,7 +28,7 @@ from dataclasses import dataclass, field
 from dask import delayed, compute
 
 from pbrAudioCommon import EntityManager
-from physicsSolver.lib.functions import _update_status
+from pbrAudioCommon import _update_status
 from ..lib.ambisonic_decoder import AmbisonicDecoder
 from ..lib.ambisonic_to_stereo_hrtf import AmbisonicToStereoHRTF
 
