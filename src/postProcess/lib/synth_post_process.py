@@ -31,7 +31,7 @@ from scipy.ndimage import gaussian_filter1d
 import soundfile as sf
 import json
 
-from physicsSolver import EntityManager
+from pbrAudioCommon import EntityManager
 
 @dataclass
 class SynthPostProcess:
