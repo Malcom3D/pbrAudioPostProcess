@@ -32,6 +32,7 @@ import soundfile as sf
 import json
 
 from pbrAudioCommon import EntityManager
+from pbrAudioCommon import debug_print, set_debug, set_debug_prefix
 
 @dataclass
 class SynthPostProcess:
@@ -49,6 +50,8 @@ class SynthPostProcess:
     
     def __post_init__(self):
         config = self.entity_manager.get('config')
+        set_debug(config.system.debug)
+        set_debug_prefix(self.__class__.__name__)
         self.synthpostprocess = config.postprocess
         self.system_config = config.system
         self.sample_rate = self.system_config.sample_rate
@@ -84,13 +87,13 @@ class SynthPostProcess:
             Dictionary of processed tracks
         """
         if self.synthpostprocess.verbose:
-            print(f"SynthPostProcess: Processing {obj_name} (idx={obj_idx})")
+            debug_print(f"SynthPostProcess: Processing {obj_name} (idx={obj_idx})")
         
         # Load rendered tracks
         rendered_tracks = self._load_rendered_tracks(obj_name)
         
         if not rendered_tracks:
-            print(f"SynthPostProcess: No rendered tracks found for {obj_name}")
+            debug_print(f"SynthPostProcess: No rendered tracks found for {obj_name}")
             return {}
         
         # Load force reference signals
@@ -129,9 +132,9 @@ class SynthPostProcess:
                     data = np.fromfile(filepath, dtype=np.float32)
                     tracks[track_type] = data
                     if self.synthpostprocess.verbose:
-                        print(f"  Loaded {track_type}: {len(data)} samples")
+                        debug_print(f"  Loaded {track_type}: {len(data)} samples")
                 except Exception as e:
-                    print(f"  Warning: Could not load {filepath}: {e}")
+                    debug_print(f"  Warning: Could not load {filepath}: {e}")
         
         return tracks
     
@@ -149,7 +152,7 @@ class SynthPostProcess:
                     forces[force_type] = data
                 except Exception as e:
                     if self.synthpostprocess.verbose:
-                        print(f"  Force {force_type} not available: {e}")
+                        debug_print(f"  Force {force_type} not available: {e}")
         
         return forces
     
@@ -605,7 +608,7 @@ class SynthPostProcess:
             json.dump(project_data, f, indent=2)
         
         if self.synthpostprocess.verbose:
-            print(f"SynthPostProcess: Saved processed tracks to {output_dir}")
+            debug_print(f"SynthPostProcess: Saved processed tracks to {output_dir}")
     
     def process_all_objects(self) -> Dict[str, Dict[str, np.ndarray]]:
         """

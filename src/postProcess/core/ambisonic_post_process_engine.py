@@ -29,6 +29,7 @@ from dask import delayed, compute
 
 from pbrAudioCommon import EntityManager
 from pbrAudioCommon import _update_status
+from pbrAudioCommon import debug_print, set_debug, set_debug_prefix
 from ..lib.ambisonic_decoder import AmbisonicDecoder
 from ..lib.ambisonic_to_stereo_hrtf import AmbisonicToStereoHRTF
 
@@ -43,6 +44,8 @@ class AmbisonicPostProcessEngine:
 
     def __post_init__(self):
         config = self.entity_manager.get('config')
+        set_debug(config.system.debug)
+        set_debug_prefix(self.__class__.__name__)
         self.status_dir = f"{config.system.cache_path}/status/RenderPostProcessEngine"
         os.makedirs(self.status_dir, exist_ok=True)
         # Create output directory
@@ -216,7 +219,7 @@ class AmbisonicPostProcessEngine:
 
         sf.write(output_file, stereo, sample_rate, subtype=subtype)
 
-        print(f"Saved stereo WAV: {output_file}")
+        debug_print(f"Saved stereo WAV: {output_file}")
 
     def _pro_logic_ii_downmix(self, decoded_audio, output_path, track_name, sample_rate, file_format, center_gain=0.707, surround_gain=0.707, lfe_to_lr=True, normalize=True):
         """
@@ -295,7 +298,7 @@ class AmbisonicPostProcessEngine:
 
         sf.write(output_file, stereo, sample_rate, subtype=subtype)
 
-        print(f"Saved ProLogic II WAV: {output_file}")
+        debug_print(f"Saved ProLogic II WAV: {output_file}")
 
     def _get_speaker_positions(self, surround_format):
         """
@@ -511,7 +514,7 @@ class AmbisonicPostProcessEngine:
 
         sf.write(output_file, multichannel, sample_rate, subtype=subtype)
 
-        print(f"Saved surround WAV: {output_file}")
+        debug_print(f"Saved surround WAV: {output_file}")
 
     def _save_surround_config(self, output_path, track_name, speaker_positions, sample_rate, file_format):
         """Save configuration file for the surround output."""
@@ -538,4 +541,4 @@ class AmbisonicPostProcessEngine:
         with open(config_file, 'w') as f:
             json.dump(config, f, indent=2)
 
-        print(f"Saved surround config: {config_file}")
+        debug_print(f"Saved surround config: {config_file}")
