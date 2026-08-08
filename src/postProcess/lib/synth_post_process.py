@@ -176,10 +176,7 @@ class SynthPostProcess:
         
         return None
     
-    def _process_track(self, 
-                       signal_data: np.ndarray, 
-                       force_signal: Optional[np.ndarray],
-                       track_name: str) -> np.ndarray:
+    def _process_track(self, signal_data: np.ndarray, force_signal: Optional[np.ndarray], track_name: str) -> np.ndarray:
         """
         Process a single track with all enabled post-processing steps.
         
