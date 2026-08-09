@@ -17,6 +17,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import numpy as np
+import soundfile as sf
 from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass, field
 
@@ -52,8 +53,10 @@ class GlobalNormalize:
                     for idx in range(len(obj_config.tracks)):
                         track_data = {}
                         track_name = obj_config.tracks[idx].name
-                        track_data[track_name] = np.fromfile(f"{dir_path}/unprocessed/{obj_config.tracks[idx].file}", dtype=np.float32).reshape((-1,1))
-                        maxs.append(np.max(track_data[track_name]))
+                        track_filename = f"{dir_path}/unprocessed/{obj_config.tracks[idx].file}"
+                        track_audio, _ = sf.read(track_filename, samplerate=sample_rate, channels=1, subtype='FLOAT', always_2d=True)
+                        track_data[track_name] = track_audio
+                        maxs.append(np.max(np.abs(track_data[track_name]), axis=0))
                         obj_tracks[obj_config.idx] = track_data[track_name]
 
         all_max = max(maxs)
