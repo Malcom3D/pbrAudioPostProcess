@@ -36,17 +36,15 @@ class GlobalNormalize:
         set_debug(config.system.debug)
         set_debug_prefix(self.__class__.__name__)
 
-        audio_force_dir = f"{config.system.cache_path}/audio_force"
-
-    def process(self, unprocessed_path: str) -> Dict[int, Dict[str, np.ndarray]]:
+    def process(self, dir_path: str) -> Dict[int, Dict[str, np.ndarray]]:
         """
-        Normalize by the max value of all tracks in unprocessed_path.
+        Normalize by the max value of all object tracks in dir_path/unprocessed.
         """
         config = self.entity_manager.get('config')
         obj_tracks = {}
         maxs = []
         for config_obj in config.objects:
-            obj_json = f"{unprocessed_path}/{config_obj.name}.json"
+            obj_json = f"{dir_path}/unprocessed/{config_obj.name}.json"
             if os.path.exists(obj_json):
                 with open(obj_json, 'r') as f:
                     obj_config = json.load(f)
@@ -54,7 +52,7 @@ class GlobalNormalize:
                     for idx in range(len(obj_config.tracks)):
                         track_data = {}
                         track_name = obj_config.tracks[idx].name
-                        track_data[track_name] = np.fromfile(f"{unprocessed_path}/{obj_config.tracks[idx].file}", dtype=np.float32).reshape((-1,1))
+                        track_data[track_name] = np.fromfile(f"{dir_path}/unprocessed/{obj_config.tracks[idx].file}", dtype=np.float32).reshape((-1,1))
                         maxs.append(np.max(track_data[track_name]))
                         obj_tracks[obj_config.idx] = track_data[track_name]
 

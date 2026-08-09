@@ -74,8 +74,7 @@ class AudioForcePostProcessEngine:
         forces = self.entity_manager.get('forces')
         sample_rate = config.system.sample_rate
 
-        # ToDo: switch from unprocessed to dir 
-        obj_tracks = self.global_normalizer.process(self.unprocessed_dir)
+        obj_tracks = self.global_normalizer.process(self.audio_force_dir)
 
         for obj_idx, tracks_data in obj_tracks.items():
             for config_obj in config.objects:
@@ -91,6 +90,7 @@ class AudioForcePostProcessEngine:
         Save individual tracks as WAV files.
         Create a json multitrack project file (e.g., for Reaper, Ardour).
         """
+        # ToDo: add postprocessing type and info in json
         project_data = {
             'object_name': config_obj.name,
             'sample_rate': sample_rate,
