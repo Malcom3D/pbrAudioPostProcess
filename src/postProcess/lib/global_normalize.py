@@ -60,6 +60,7 @@ class GlobalNormalize:
                         obj_tracks[obj_config.idx] = track_data[track_name]
 
         all_max = max(maxs)
+        debug_print('Global max value:', all_max)
 
         for obj_idx, data in obj_tracks.items():
             for track_name, track_data in data.items():
