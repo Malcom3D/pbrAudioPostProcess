@@ -17,6 +17,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import os
+import json
 import numpy as np
 import soundfile as sf
 from typing import Dict, List, Tuple, Optional, Any
@@ -50,22 +51,23 @@ class GlobalNormalize:
             if os.path.exists(obj_json):
                 with open(obj_json, 'r') as f:
                     obj_config = json.load(f)
-                    sample_rate = obj_config.sample_rate
-                    for idx in range(len(obj_config.tracks)):
-                        track_data = {}
-                        track_name = obj_config.tracks[idx].name
-                        track_filename = f"{dir_path}/unprocessed/{obj_config.tracks[idx].file}"
+                    sample_rate = obj_config['sample_rate']
+                    track_data = {}
+                    for idx in range(len(obj_config['tracks'])):
+                        track_name = obj_config['tracks'][idx]['name']
+                        track_filename = f"{dir_path}/unprocessed/{obj_config['tracks'][idx]['file']}"
                         track_audio, _ = sf.read(track_filename, samplerate=sample_rate, channels=1, subtype='FLOAT', always_2d=True)
                         track_data[track_name] = track_audio
                         maxs.append(np.max(np.abs(track_data[track_name]), axis=0))
-                        obj_tracks[obj_config.idx] = track_data[track_name]
+                    obj_tracks[config_obj.idx] = track_data
 
         all_max = max(maxs)
         debug_print('Global max value:', all_max)
 
-        for obj_idx, data in obj_tracks.items():
-            for track_name, track_data in data.items():
-                track_data /= all_max
-                obj_tracks[obj_idx][track_name] = track_data
+        for obj_idx in obj_tracks.keys():
+            track_data = obj_tracks[obj_idx]
+            for track_name, audio_data in track_data.items():
+                audio_data /= all_max
+                obj_tracks[obj_idx][track_name] = audio_data
 
         return obj_tracks

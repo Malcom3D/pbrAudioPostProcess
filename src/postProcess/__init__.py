@@ -32,6 +32,7 @@ from .core.ambisonic_post_process_engine import AmbisonicPostProcessEngine
 from .lib.synth_post_process import SynthPostProcess
 from .lib.audio_forces_denoiser import AudioForcesDenoiser
 from .lib.ambisonic_decoder import AmbisonicDecoder
+from .lib.global_normalize import GlobalNormalize
 from .core.audio_force_post_process_engine import AudioForcePostProcessEngine
 
 __all__ = [
@@ -41,5 +42,6 @@ __all__ = [
      'AmbisonicDecoder',
      'SynthPostProcess',
      'AudioForcesDenoiser',
-     'AudioForcePostProcessEngine'
+     'AudioForcePostProcessEngine',
+     'GlobalNormalize'
 ]
