@@ -76,7 +76,11 @@ class AudioForcePostProcessEngine:
         forces = self.entity_manager.get('forces')
         sample_rate = config.system.sample_rate
 
-        obj_tracks = self.global_normalizer.process(self.audio_force_dir)
+        try:
+            _ = os.listdir(self.audio_force_dir)
+            obj_tracks = self.global_normalizer.process(self.audio_force_dir)
+        except:
+            return
 
         for obj_idx, tracks_data in obj_tracks.items():
             for config_obj in config.objects:
