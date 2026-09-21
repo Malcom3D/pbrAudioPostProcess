@@ -57,7 +57,7 @@ class PostProcessEngine:
         Returns:
             Dictionary of processed tracks per object
         """
-        _update_status(f"{self.status_dir}/process", 0)
+        _update_status(f"{self.status_dir}", "/process", 0)
         
         config = self.entity_manager.get('config')
         tasks = []
@@ -76,7 +76,7 @@ class PostProcessEngine:
             if result:
                 all_results.update(result)
         
-        _update_status(f"{self.status_dir}/process", 100)
+        _update_status(f"{self.status_dir}", "/process", 100)
         
         return all_results
     
@@ -92,7 +92,7 @@ class PostProcessEngine:
         
         This is designed to be called in the bake pipeline after ModalPlayer.
         """
-        _update_status(f"{self.status_dir}/post_bake", 0)
+        _update_status(f"{self.status_dir}", "/post_bake", 0)
         
         # If modal player results are provided, use them
         if modal_player_results:
@@ -102,6 +102,6 @@ class PostProcessEngine:
         # Process all objects
         results = self.process()
         
-        _update_status(f"{self.status_dir}/post_bake", 100)
+        _update_status(f"{self.status_dir}", "/post_bake", 100)
         
         return results

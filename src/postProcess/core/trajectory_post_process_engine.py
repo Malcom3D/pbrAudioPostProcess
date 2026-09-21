@@ -52,7 +52,7 @@ class TrajectoryPostProcessEngine:
         Returns:
             Dictionary mapping object indices to corrected trajectories
         """
-        _update_status(f"{self.status_dir}/process", 0)
+        _update_status(f"{self.status_dir}", "/process", 0)
         
         config = self.entity_manager.get('config')
         tasks = []
@@ -83,7 +83,7 @@ class TrajectoryPostProcessEngine:
                     self.entity_manager._trajectories[idx] = corrected_trajectory
                     break
         
-        _update_status(f"{self.status_dir}/process", 100)
+        _update_status(f"{self.status_dir}", "/process", 100)
         
         return all_results
     
@@ -100,7 +100,7 @@ class TrajectoryPostProcessEngine:
         
         Should be called in the bake pipeline after FlightPath but before DistanceSolver.
         """
-        _update_status(f"{self.status_dir}/pre_distance", 0)
+        _update_status(f"{self.status_dir}", "/pre_distance", 0)
         
         results = self.process()
         
@@ -115,5 +115,5 @@ class TrajectoryPostProcessEngine:
                     filename = f"{output_dir}/{config_obj.name}.pkl"
                     trajectory.save(filename)
         
-        _update_status(f"{self.status_dir}/pre_distance", 100)
+        _update_status(f"{self.status_dir}", "/pre_distance", 100)
 
