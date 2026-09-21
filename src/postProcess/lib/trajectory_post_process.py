@@ -23,8 +23,7 @@ from typing import Dict, List, Tuple, Optional, Any
 from dataclasses import dataclass, field
 from scipy.ndimage import gaussian_filter1d
 
-from pbrAudioCommon import EntityManager
-from physicsSolver.lib.trajectory_data import TrajectoryData
+from pbrAudioCommon import EntityManager, TrajectoryData
 
 @dataclass
 class TrajectoryPostProcess:

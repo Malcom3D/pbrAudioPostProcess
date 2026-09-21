@@ -26,9 +26,9 @@ from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from dask import delayed, compute
 
-from pbrAudioCommon import EntityManager
+from pbrAudioCommon import EntityManager, TrajectoryData
 from pbrAudioCommon import _update_status
-from physicsSolver.lib.trajectory_data import TrajectoryData
+
 from ..lib.synth_post_process import SynthPostProcess
 
 
